@@ -79,13 +79,17 @@ def process_images_for_clouds_and_combine(image_paths, csv_path, output_path):
     combine_images(image_paths[0], image_paths[1].replace('.png', '_cloud.png'), output_path)
 
 
-def draw_revision_cloud(ax, points, arc_radius=1, arc_angle=45): 
+def draw_revision_cloud(ax, points, arc_radius=1, arc_angle=45):
+    """
+    Draw a revision cloud with a semi-transparent bluish rectangle inside it.
+    """
     for i in range(len(points)):
         start_point = points[i]
         end_point = points[(i + 1) % len(points)]
         line_angle = np.arctan2(end_point[1] - start_point[1], end_point[0] - start_point[0])
         distance = np.hypot(end_point[1] - start_point[1], end_point[0] - start_point[0])
         num_arcs = int(distance // (2 * arc_radius))
+
         for j in range(num_arcs):
             center_x = start_point[0] + (2 * arc_radius * j + arc_radius) * np.cos(line_angle)
             center_y = start_point[1] + (2 * arc_radius * j + arc_radius) * np.sin(line_angle)
@@ -96,6 +100,15 @@ def draw_revision_cloud(ax, points, arc_radius=1, arc_angle=45):
                       theta2=np.rad2deg(angle_offset) + 180,
                       color='blue')
             ax.add_patch(arc)
+
+    # Draw a semi-transparent bluish rectangle inside the cloud
+    x_min = min([x for x, y in points])
+    x_max = max([x for x, y in points])
+    y_min = min([y for x, y in points])
+    y_max = max([y for x, y in points])
+    rect = Rectangle((x_min, y_min), x_max - x_min, y_max - y_min,
+                     color=(0, 0, 1, 0.2))  # Blue color with 20% transparency
+    ax.add_patch(rect)
 
 def combine_images(image1_path, image2_path, output_path):
     image1 = Image.open(image1_path)
@@ -110,7 +123,7 @@ def combine_images(image1_path, image2_path, output_path):
     new_image.save(output_path)
 
 # Example usage
-pdf_file_paths = ['/content/IG-10309-DA-0000-07-BD-00002_A.1 (1).pdf', '/content/IG-10309-DA-0000-07-BD-00002_B (1).pdf']
+pdf_file_paths = ['/content/IG-10309-DA-0000-07-GA-00002_A.pdf', '/content/IG-10309-DA-0000-07-GA-00002_B.pdf']
 output_folder_path = '/content'
 convert_pdfs_to_images(pdf_file_paths, output_folder_path)
 calculate_image_similarity('/content/im1_page_1.png', '/content/im2_page_1.png')
